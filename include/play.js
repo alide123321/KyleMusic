@@ -85,7 +85,6 @@ module.exports = {
 			await playingMessage.react('⏭');
 			await playingMessage.react('⏯');
 			await playingMessage.react('🔁');
-			await playingMessage.react('⏹');
 		} catch (error) {
 			console.error(error);
 		}
@@ -130,20 +129,6 @@ module.exports = {
 					queue.textChannel
 						.send(`Loop is now ${queue.loop ? '**on**' : '**off**'}`)
 						.catch(console.error);
-					break;
-
-				case '⏹':
-					reaction.users.remove(user).catch(console.error);
-					if (!canModifyQueue(member)) return;
-					queue.songs = [];
-					queue.textChannel.send(`${user} ⏹ stopped the music!`).catch(console.error);
-					try {
-						queue.connection.dispatcher.end();
-					} catch (error) {
-						console.error(error);
-						queue.connection.disconnect();
-					}
-					collector.stop();
 					break;
 
 				default:
