@@ -33,7 +33,7 @@ module.exports = {
 
 		try {
 			if (song.url.includes('youtube.com')) {
-				stream = await ytdl(song.url, { highWaterMark: 1 << 25 });
+				stream = await ytdl(song.url, { filter: 'audioonly', highWaterMark: 1 << 25 });
 			} else if (song.url.includes('soundcloud.com')) {
 				try {
 					stream = await scdl.downloadFormat(song.url, scdl.FORMATS.OPUS, SOUNDCLOUD_CLIENT_ID);
@@ -80,7 +80,11 @@ module.exports = {
 
 		try {
 			var playingMessage = await queue.textChannel.send(
-				`🎶 Started playing: **${song.title}** ${song.url}`
+				`🎶 Started playing: **${song.title}** - [${
+					song.duration == 0
+						? ' ◉ LIVE'
+						: new Date(song.duration * 1000).toISOString().substr(11, 8)
+				}] ${song.url}`
 			);
 			await playingMessage.react('⏭');
 			await playingMessage.react('⏯');

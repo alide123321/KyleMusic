@@ -120,8 +120,15 @@ module.exports = {
 
 		if (serverQueue) {
 			serverQueue.songs.push(song);
+
 			return serverQueue.textChannel
-				.send(`✅ **${song.title}** has been added to the queue by ${message.author}`)
+				.send(
+					`✅ **${song.title}** has been added to the queue by ${message.author} song duration: [${
+						song.duration == 0
+							? ' ◉ LIVE'
+							: new Date(song.duration * 1000).toISOString().substr(11, 8)
+					}]`
+				)
 				.catch(console.error);
 		}
 
