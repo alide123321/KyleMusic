@@ -19,9 +19,9 @@
 		"ffmpeg-static": "^4.2.7",
 		"lyrics-finder": "^21.7.0",
 		"simple-youtube-api": "^5.2.1",
-		"soundcloud-downloader": "^0.2.3",
+		"soundcloud-downloader": "^0.2.4",
 		"string-progressbar": "^1.0.1",
-		"ytdl-core": "^4.4.3"
+		"ytdl-core": "^4.4.4"
 	},
 	"scripts": {
 		"start": "node index.js"
