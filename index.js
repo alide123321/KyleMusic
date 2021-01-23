@@ -4,7 +4,9 @@
 const { Client, Collection } = require('discord.js');
 const { readdirSync } = require('fs');
 const { join } = require('path');
-const { TOKEN, PREFIX } = require('./util/EvobotUtil');
+const { TOKEN, PREFIX, LOCALE } = require('./util/EvobotUtil');
+const path = require('path');
+const i18n = require('i18n');
 
 const client = new Client({
 	disableMentions: 'everyone',
@@ -17,6 +19,31 @@ client.prefix = PREFIX;
 client.queue = new Map();
 const cooldowns = new Collection();
 const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+i18n.configure({
+	locales: ['en', 'ko', 'fr', 'pt_br', 'zh_cn', 'zh_tw'],
+	directory: path.join(__dirname, 'locales'),
+	defaultLocale: 'en',
+	objectNotation: true,
+	register: global,
+
+	logWarnFn: function (msg) {
+		console.log('warn', msg);
+	},
+
+	logErrorFn: function (msg) {
+		console.log('error', msg);
+	},
+
+	missingKeyFn: function (locale, value) {
+		return value;
+	},
+
+	mustacheConfig: {
+		tags: ['{{', '}}'],
+		disable: false,
+	},
+});
 
 /**
  * Client Events
@@ -68,30 +95,10 @@ client.on('message', async (message) => {
 		cooldowns.set(command.name, new Collection());
 	}
 
-	const now = Date.now();
-	const timestamps = cooldowns.get(command.name);
-	const cooldownAmount = (command.cooldown || 1) * 1000;
-
-	if (timestamps.has(message.author.id)) {
-		const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
-
-		if (now < expirationTime) {
-			const timeLeft = (expirationTime - now) / 1000;
-			return message.reply(
-				`please wait ${timeLeft.toFixed(1)} more second(s) before reusing the \`${
-					command.name
-				}\` command.`
-			);
-		}
-	}
-
-	timestamps.set(message.author.id, now);
-	setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
-
 	try {
 		command.execute(message, args);
 	} catch (error) {
 		console.error(error);
-		message.reply('There was an error executing that command.').catch(console.error);
+		message.reply(i18n.__('common.errorCommend')).catch(console.error);
 	}
 });

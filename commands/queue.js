@@ -1,24 +1,28 @@
 const { MessageEmbed } = require('discord.js');
+const { LOCALE } = require('../util/EvobotUtil');
 const createBar = require('string-progressbar');
+const i18n = require('i18n');
+
+i18n.setLocale(LOCALE);
 
 module.exports = {
 	name: 'queue',
 	cooldown: 5,
 	aliases: ['q'],
-	description: 'Show the music queue and now playing.',
+	description: i18n.__('queue.description'),
 	async execute(message) {
 		const permissions = message.channel.permissionsFor(message.client.user);
 		if (!permissions.has(['MANAGE_MESSAGES', 'ADD_REACTIONS']))
-			return message.reply('Missing permission to manage messages or add reactions');
+			return message.reply(i18n.__('queue.missingPermissionMessage'));
 
 		const queue = message.client.queue.get(message.guild.id);
-		if (!queue) return message.channel.send('❌ **Nothing playing in this server**');
+		if (!queue) return message.channel.send(i18n.__('queue.errorNotQueue'));
 
 		let currentPage = 0;
 		const embeds = generateQueueEmbed(message, queue);
 
 		const queueEmbed = await message.channel.send(
-			`**Current Page - ${currentPage + 1}/${embeds.length}**`,
+			`**${i18n.__mf('queue.currentPage')} ${currentPage + 1}/${embeds.length}**`,
 			embeds[currentPage]
 		);
 
@@ -41,7 +45,7 @@ module.exports = {
 					if (currentPage < embeds.length - 1) {
 						currentPage++;
 						queueEmbed.edit(
-							`**Current Page - ${currentPage + 1}/${embeds.length}**`,
+							i18n.__mf('queue.currentPage', { page: currentPage + 1, length: embeds.length }),
 							embeds[currentPage]
 						);
 					}
@@ -49,7 +53,7 @@ module.exports = {
 					if (currentPage !== 0) {
 						--currentPage;
 						queueEmbed.edit(
-							`**Current Page - ${currentPage + 1}/${embeds.length}**`,
+							i18n.__mf('queue.currentPage', { page: currentPage + 1, length: embeds.length }),
 							embeds[currentPage]
 						);
 					}
@@ -90,15 +94,15 @@ function generateQueueEmbed(message, queue) {
 			(queue.connection.dispatcher.streamTime - queue.connection.dispatcher.pausedTime) / 1000;
 
 		const embed = new MessageEmbed()
-			.setTitle('Song Queue\n')
+			.setTitle(i18n.__('queue.embedTitle'))
 			.setThumbnail(message.guild.iconURL())
 			.setColor('#F8AA2A')
 			.setDescription(
-				`**Current Song - [${queue.songs[0].title}] - [${
-					queue.songs[0].duration == 0
-						? ' ◉ LIVE'
-						: new Date(queue.songs[0].duration * 1000).toISOString().substr(11, 8)
-				}]**\n\n${info}`
+				i18n.__mf('queue.embedCurrentSong', {
+					title: queue.songs[0].title,
+					url: queue.songs[0].url,
+					info: info,
+				})
 			)
 			.setFooter(
 				new Date(seek * 1000).toISOString().substr(11, 8) +
@@ -108,8 +112,7 @@ function generateQueueEmbed(message, queue) {
 					(queue.songs[0].duration == 0
 						? ' ◉ LIVE'
 						: new Date(queue.songs[0].duration * 1000).toISOString().substr(11, 8))
-			)
-			.setTimestamp();
+			);
 		embeds.push(embed);
 	}
 

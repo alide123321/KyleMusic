@@ -1,6 +1,8 @@
-const ytdl = require('erit-ytdl');
+const ytdl = require('ytdl-core-discord');
 const scdl = require('soundcloud-downloader').default;
-const { canModifyQueue, STAY_TIME } = require('../util/EvobotUtil');
+const { canModifyQueue, STAY_TIME, LOCALE } = require('../util/EvobotUtil');
+const i18n = require('i18n');
+i18n.setLocale(LOCALE);
 
 module.exports = {
 	async play(song, message) {
@@ -22,9 +24,9 @@ module.exports = {
 			setTimeout(function () {
 				if (queue.connection.dispatcher && message.guild.me.voice.channel) return;
 				queue.channel.leave();
-				queue.textChannel.send('Leaving voice channel...');
+				queue.textChannel.send(i18n.__('play.leaveChannel'));
 			}, STAY_TIME * 1000);
-			queue.textChannel.send('❌ Music queue ended.').catch(console.error);
+			queue.textChannel.send(i18n.__('play.queueEnded')).catch(console.error);
 			return message.client.queue.delete(message.guild.id);
 		}
 
@@ -33,7 +35,7 @@ module.exports = {
 
 		try {
 			if (song.url.includes('youtube.com')) {
-				stream = await ytdl(song.url, { filter: 'audioonly', highWaterMark: 1 << 25 });
+				stream = await ytdl(song.url, { highWaterMark: 1 << 25 });
 			} else if (song.url.includes('soundcloud.com')) {
 				try {
 					stream = await scdl.downloadFormat(song.url, scdl.FORMATS.OPUS, SOUNDCLOUD_CLIENT_ID);
@@ -49,7 +51,9 @@ module.exports = {
 			}
 
 			console.error(error);
-			return message.channel.send(`Error: ${error.message ? error.message : error}`);
+			return message.channel.send(
+				i18n.__mf('play.queueError', { error: error.message ? error.message : error })
+			);
 		}
 
 		queue.connection.on('disconnect', () => message.client.queue.delete(message.guild.id));
@@ -80,11 +84,7 @@ module.exports = {
 
 		try {
 			var playingMessage = await queue.textChannel.send(
-				`🎶 Started playing: **${song.title}** - [${
-					song.duration == 0
-						? ' ◉ LIVE'
-						: new Date(song.duration * 1000).toISOString().substr(11, 8)
-				}] ${song.url}`
+				i18n.__mf('play.startedPlaying', { title: song.title, url: song.url })
 			);
 			await playingMessage.react('⏭');
 			await playingMessage.react('⏯');
@@ -106,32 +106,41 @@ module.exports = {
 				case '⏭':
 					queue.playing = true;
 					reaction.users.remove(user).catch(console.error);
-					if (!canModifyQueue(member)) return;
+					if (!canModifyQueue(member)) return i18n.__('common.errorNotChannel');
 					queue.connection.dispatcher.end();
-					queue.textChannel.send(`${user} ⏩ skipped the song`).catch(console.error);
+					queue.textChannel.send(i18n.__mf('play.skipSong', { author: user })).catch(console.error);
 					collector.stop();
 					break;
 
 				case '⏯':
 					reaction.users.remove(user).catch(console.error);
-					if (!canModifyQueue(member)) return;
+					if (!canModifyQueue(member)) return i18n.__('common.errorNotChannel');
 					if (queue.playing) {
 						queue.playing = !queue.playing;
 						queue.connection.dispatcher.pause(true);
-						queue.textChannel.send(`${user} ⏸ paused the music.`).catch(console.error);
+						queue.textChannel
+							.send(i18n.__mf('play.pauseSong', { author: user }))
+							.catch(console.error);
 					} else {
 						queue.playing = !queue.playing;
 						queue.connection.dispatcher.resume();
-						queue.textChannel.send(`${user} ▶ resumed the music!`).catch(console.error);
+						queue.textChannel
+							.send(i18n.__mf('play.resumeSong', { author: user }))
+							.catch(console.error);
 					}
 					break;
 
 				case '🔁':
 					reaction.users.remove(user).catch(console.error);
-					if (!canModifyQueue(member)) return;
+					if (!canModifyQueue(member)) return i18n.__('common.errorNotChannel');
 					queue.loop = !queue.loop;
 					queue.textChannel
-						.send(`Loop is now ${queue.loop ? '**on**' : '**off**'}`)
+						.send(
+							i18n.__mf('play.loopSong', {
+								author: user,
+								loop: queue.loop ? i18n.__('common.on') : i18n.__('common.off'),
+							})
+						)
 						.catch(console.error);
 					break;
 
