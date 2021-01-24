@@ -103,16 +103,8 @@ function generateQueueEmbed(message, queue) {
 					url: queue.songs[0].url,
 					info: info,
 				})
-			)
-			.setFooter(
-				new Date(seek * 1000).toISOString().substr(11, 8) +
-					'[' +
-					createBar(queue.songs[0].duration == 0 ? seek : queue.songs[0].duration, seek, 20)[0] +
-					']' +
-					(queue.songs[0].duration == 0
-						? ' ◉ LIVE'
-						: new Date(queue.songs[0].duration * 1000).toISOString().substr(11, 8))
 			);
+
 		embeds.push(embed);
 	}
 
