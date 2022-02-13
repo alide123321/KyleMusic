@@ -1,6 +1,8 @@
 /config.json
 /.idea
 /.vscode
+/sounds/**
+!/sounds/putmusichere.mp3
 
 # Logs
 logs
@@ -57,3 +59,6 @@ typings/
 
 # Yarn Integrity file
 .yarn-integrity
+
+# Temp ignore 
+config.json
