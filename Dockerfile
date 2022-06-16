@@ -1,4 +1,4 @@
-FROM node:14.16.1-slim
+FROM node:16.14
 
 ENV USER=evobot
 
@@ -21,4 +21,4 @@ VOLUME [ "/home/evobot" ]
 
 COPY --chown=${USER}:${USER}  . .
 
-ENTRYPOINT [ "node", "index.js" ]
+ENTRYPOINT [ "npm", "run", "start" ]
